@@ -40,22 +40,22 @@ def create_object(data: dict, db: Session = Depends(get_db)):
 
 @app.get("/{object_id}", response_model=schemas.StrObject | schemas.JSONObject)
 def get_object(
-    object_id: str, json: bool = False, db: Session = Depends(get_db)
+    object_id: str, format: str = "string", db: Session = Depends(get_db)
 ):  # no-qa E501
     object = crud.get_object(db, id=object_id)
     if object is None:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail="Object not found."
         )
-    if json:
+    if format == "json":
         return to_json(object)
     return object
 
 
 @app.get("/", response_model=list[schemas.StrObject | schemas.JSONObject])
-def get_all_objects(json: bool = False, db: Session = Depends(get_db)):
+def get_all_objects(format: str = "string", db: Session = Depends(get_db)):
     objects = crud.get_all_objects(db)
-    if json:
+    if format == "json":
         json_objects = [to_json(object) for object in objects]
         return json_objects
     return objects

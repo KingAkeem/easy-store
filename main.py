@@ -39,7 +39,9 @@ def create_object(data: dict, db: Session = Depends(get_db)):
 
 
 @app.get("/{object_id}", response_model=schemas.StrObject | schemas.JSONObject)
-def get_object(object_id: str, json: bool = False, db: Session = Depends(get_db)):
+def get_object(
+    object_id: str, json: bool = False, db: Session = Depends(get_db)
+):  # no-qa E501
     object = crud.get_object(db, id=object_id)
     if object is None:
         raise HTTPException(

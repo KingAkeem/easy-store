@@ -20,3 +20,8 @@ def get_object(db: Session, id: int) -> Union[Object, None]:
 
 def get_all_objects(db: Session) -> list[Object]:
     return db.query(Object).all()
+
+
+def delete_object(db: Session, id: int) -> None:
+    db.query(Object).filter(Object.id == id).delete()
+    db.commit()

@@ -59,3 +59,9 @@ def get_all_objects(json: bool = False, db: Session = Depends(get_db)):
         json_objects = [to_json(object) for object in objects]
         return json_objects
     return objects
+
+
+@app.delete("/{object_id}")
+def delete_object(object_id: int, db: Session = Depends(get_db)):
+    crud.delete_object(db, id=object_id)
+    return {"message": "Object successfully deleted."}

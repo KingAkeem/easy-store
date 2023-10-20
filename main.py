@@ -38,6 +38,7 @@ def create_json_object(data: dict, db: Session = Depends(get_db)):
             status_code=HTTPStatus.CONFLICT, detail="Object already exists."
         )
 
+
 @app.post("/file", response_model=schemas.FileObject)
 def create_json_object(data: UploadFile, db: Session = Depends(get_db)):
     try:
@@ -48,47 +49,55 @@ def create_json_object(data: UploadFile, db: Session = Depends(get_db)):
         )
 
 
-
 @app.get("/json/{object_id}")
-def get_object(object_id: str, convert: bool = False, db: Session = Depends(get_db)):  # noqa E501
+def get_object(
+    object_id: str, convert: bool = False, db: Session = Depends(get_db)
+):  # noqa E501
     object = crud.get_json_object(db, id=object_id)
     if object is None:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail="Object not found."
         )
-    
+
     if convert:
         return to_json(object)
-    
+
     return object
 
+
 @app.get("/file/{object_id}")
-def get_object(object_id: str, convert: bool = False, db: Session = Depends(get_db)):  # noqa E501
+def get_object(
+    object_id: str, convert: bool = False, db: Session = Depends(get_db)
+):  # noqa E501
     object = crud.get_file_object(db, id=object_id)
     if object is None:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail="Object not found."
         )
-    
+
     if convert:
         return FileResponse(object.file_path)
-        
+
     return object
+
 
 @app.get("/json", response_model=list[schemas.JSONObject])
 def get_all_json_objects(db: Session = Depends(get_db)):
     objects = crud.get_all_json_objects(db)
     return objects
 
+
 @app.get("/file", response_model=list[schemas.FileObject])
 def get_all_json_objects(db: Session = Depends(get_db)):
     objects = crud.get_all_file_objects(db)
     return objects
 
+
 @app.delete("/json/{object_id}")
 def delete_json_object(object_id: str, db: Session = Depends(get_db)):
     crud.delete_json_object(db, id=object_id)
     return {"message": "Object successfully deleted."}
+
 
 @app.delete("/file/{object_id}")
 def delete_file_object(object_id: str, db: Session = Depends(get_db)):

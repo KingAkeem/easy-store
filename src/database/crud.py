@@ -3,7 +3,7 @@ import os
 
 from pathlib import Path
 from shutil import copyfileobj
-from sqlalchemy import or_ 
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from typing import Union
 from fastapi import UploadFile
@@ -23,7 +23,7 @@ def create_file_object(db: Session, file: UploadFile) -> FileObject:
     directory = os.path.join(os.getcwd(), "files")
     if not os.path.exists(directory):
         os.makedirs(directory)
-    
+
     file_path = os.path.join(directory, file.filename)
     try:
         with open(file_path, "wb+") as f:
@@ -31,8 +31,10 @@ def create_file_object(db: Session, file: UploadFile) -> FileObject:
     finally:
         file.file.close()
 
-    file_type = ''.join(Path(file.filename).suffixes)
-    object = FileObject(file_path=file_path, file_name=file.filename, file_type=file_type)
+    file_type = "".join(Path(file.filename).suffixes)
+    object = FileObject(
+        file_path=file_path, file_name=file.filename, file_type=file_type
+    )
     db.add(object)
     db.commit()
     db.refresh(object)
@@ -45,7 +47,11 @@ def get_json_object(db: Session, id: str) -> Union[JSONObject, None]:
 
 def get_file_object(db: Session, id: str) -> Union[FileObject, None]:
     # ID could be the database ID or the file name since both are unique
-    return db.query(FileObject).filter(or_(FileObject.id == id, FileObject.file_name == id)).first()
+    return (
+        db.query(FileObject)
+        .filter(or_(FileObject.id == id, FileObject.file_name == id))
+        .first()
+    )
 
 
 def get_all_json_objects(db: Session) -> list[JSONObject]:
@@ -62,5 +68,7 @@ def delete_json_object(db: Session, id: str) -> None:
 
 
 def delete_file_object(db: Session, id: str) -> None:
-    db.query(FileObject).filter(or_(FileObject.id == id, FileObject.file_name == id)).delete()
+    db.query(FileObject).filter(
+        or_(FileObject.id == id, FileObject.file_name == id)
+    ).delete()
     db.commit()

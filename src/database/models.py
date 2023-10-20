@@ -7,6 +7,7 @@ class JSONObject(Base):
     id = Column(Integer, primary_key=True, index=True)
     data = Column(String, unique=True)
 
+
 class FileObject(Base):
     __tablename__ = "file_objects"
     id = Column(Integer, primary_key=True, index=True)

@@ -50,7 +50,7 @@ def create_json_object(data: UploadFile, db: Session = Depends(get_db)):
 
 
 @app.get("/json/{object_id}")
-def get_object(
+def get_json_object(
     object_id: str, convert: bool = False, db: Session = Depends(get_db)
 ):  # noqa E501
     object = crud.get_json_object(db, id=object_id)
@@ -66,7 +66,7 @@ def get_object(
 
 
 @app.get("/file/{object_id}")
-def get_object(
+def get_file_object(
     object_id: str, convert: bool = False, db: Session = Depends(get_db)
 ):  # noqa E501
     object = crud.get_file_object(db, id=object_id)

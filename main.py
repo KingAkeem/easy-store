@@ -40,7 +40,7 @@ def create_json_object(data: dict, db: Session = Depends(get_db)):
 
 
 @app.post("/file", response_model=schemas.FileObject)
-def create_json_object(data: UploadFile, db: Session = Depends(get_db)):
+def create_file_object(data: UploadFile, db: Session = Depends(get_db)):
     try:
         return crud.create_file_object(db, file=data)
     except IntegrityError:
@@ -88,7 +88,7 @@ def get_all_json_objects(db: Session = Depends(get_db)):
 
 
 @app.get("/file", response_model=list[schemas.FileObject])
-def get_all_json_objects(db: Session = Depends(get_db)):
+def get_all_file_objects(db: Session = Depends(get_db)):
     objects = crud.get_all_file_objects(db)
     return objects
 

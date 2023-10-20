@@ -5,7 +5,6 @@ from pathlib import Path
 from shutil import copyfileobj
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
-from typing import Union
 from fastapi import UploadFile
 
 from src.database.models import JSONObject, FileObject
@@ -41,11 +40,11 @@ def create_file_object(db: Session, file: UploadFile) -> FileObject:
     return object
 
 
-def get_json_object(db: Session, id: str) -> Union[JSONObject, None]:
+def get_json_object(db: Session, id: str) -> JSONObject | None:
     return db.query(JSONObject).filter(JSONObject.id == id).first()
 
 
-def get_file_object(db: Session, id: str) -> Union[FileObject, None]:
+def get_file_object(db: Session, id: str) -> FileObject | None:
     # ID could be the database ID or the file name since both are unique
     return (
         db.query(FileObject)

@@ -1,9 +1,12 @@
 import json
+import os
 
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, UploadFile
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from http import HTTPStatus
+from typing import Any
 
 from src import schemas
 from src.database.core import SessionLocal, engine, Base
@@ -29,35 +32,42 @@ def to_json(object: models.Object) -> models.Object:
 
 
 @app.post("/", response_model=schemas.StrObject)
-def create_object(data: dict, db: Session = Depends(get_db)):
+def create_object(
+    json_data: dict, file_data: UploadFile, db: Session = Depends(get_db)
+):
+    objects = list()
     try:
-        return crud.create_object(db, data=data)
+        if json_data:
+            objects.append(crud.create_json_object(db, data=json_data))
+
+        if file_data:
+            objects.append(crud.create_file_object(db, file=file_data))
+
+        return objects
+
     except IntegrityError:
         raise HTTPException(
             status_code=HTTPStatus.CONFLICT, detail="Object already exists."
         )
 
 
-@app.get("/{object_id}", response_model=schemas.StrObject | schemas.JSONObject)
-def get_object(
-    object_id: str, format: str = "string", db: Session = Depends(get_db)
-):  # no-qa E501
+@app.get("/{object_id}")
+def get_object(object_id: int | str, db: Session = Depends(get_db)):  # noqa E501
     object = crud.get_object(db, id=object_id)
     if object is None:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail="Object not found."
         )
-    if format == "json":
+    if object.type == "json":
         return to_json(object)
+    elif object.type == "file":
+        return FileResponse(os.path.join("files", object.data))
     return object
 
 
-@app.get("/", response_model=list[schemas.StrObject | schemas.JSONObject])
-def get_all_objects(format: str = "string", db: Session = Depends(get_db)):
+@app.get("/", response_model=list[schemas.StrObject])
+def get_all_objects(db: Session = Depends(get_db)):
     objects = crud.get_all_objects(db)
-    if format == "json":
-        json_objects = [to_json(object) for object in objects]
-        return json_objects
     return objects
 
 

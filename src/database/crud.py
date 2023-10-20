@@ -1,63 +1,66 @@
 import json
 import os
-import shutil
 
-from sqlalchemy import and_
+from pathlib import Path
+from shutil import copyfileobj
+from sqlalchemy import or_ 
 from sqlalchemy.orm import Session
 from typing import Union
 from fastapi import UploadFile
 
-from src.database.models import Object
+from src.database.models import JSONObject, FileObject
 
 
-def create_json_object(db: Session, data: dict) -> Object:
-    object = Object(type="json", data=json.dumps(data))
+def create_json_object(db: Session, data: dict) -> JSONObject:
+    object = JSONObject(data=json.dumps(data))
     db.add(object)
     db.commit()
     db.refresh(object)
     return object
 
 
-def create_file_object(db: Session, file: UploadFile) -> Object:
+def create_file_object(db: Session, file: UploadFile) -> FileObject:
     directory = os.path.join(os.getcwd(), "files")
     if not os.path.exists(directory):
         os.makedirs(directory)
-
+    
+    file_path = os.path.join(directory, file.filename)
     try:
-        with open(os.path.join(directory, file.filename), "wb+") as f:
-            shutil.copyfileobj(file.file, f)
+        with open(file_path, "wb+") as f:
+            copyfileobj(file.file, f)
     finally:
         file.file.close()
 
-    object = Object(type="file", data=file.filename)
+    file_type = ''.join(Path(file.filename).suffixes)
+    object = FileObject(file_path=file_path, file_name=file.filename, file_type=file_type)
     db.add(object)
     db.commit()
     db.refresh(object)
     return object
 
 
-def get_object(db: Session, id: int | str) -> Union[Object, None]:
-    if isinstance(id, int) or id.isdigit():
-        return db.query(Object).filter(Object.id == id).first()
-    elif isinstance(id, str):
-        return (
-            db.query(Object)
-            .filter(and_(Object.data == id, Object.type == "file"))
-            .first()
-        )
+def get_json_object(db: Session, id: str) -> Union[JSONObject, None]:
+    return db.query(JSONObject).filter(JSONObject.id == id).first()
 
 
-def get_all_objects(db: Session) -> list[Object]:
-    return db.query(Object).all()
+def get_file_object(db: Session, id: str) -> Union[FileObject, None]:
+    # ID could be the database ID or the file name since both are unique
+    return db.query(FileObject).filter(or_(FileObject.id == id, FileObject.file_name == id)).first()
 
 
-def delete_object(db: Session, id: int | str) -> None:
-    if isinstance(id, int):
-        db.query(Object).filter(Object.id == id).delete()
-    elif isinstance(id, str):
-        (
-            db.query(Object)
-            .filter(and_(Object.data == id, Object.type == "file"))
-            .delete()
-        )
+def get_all_json_objects(db: Session) -> list[JSONObject]:
+    return db.query(JSONObject).all()
+
+
+def get_all_file_objects(db: Session) -> list[FileObject]:
+    return db.query(FileObject).all()
+
+
+def delete_json_object(db: Session, id: str) -> None:
+    db.query(JSONObject).filter(JSONObject.id == id).delete()
+    db.commit()
+
+
+def delete_file_object(db: Session, id: str) -> None:
+    db.query(FileObject).filter(or_(FileObject.id == id, FileObject.file_name == id)).delete()
     db.commit()

@@ -32,6 +32,14 @@ def test_get_file_by_id() -> None:
     assert file_object["file_type"] == ".txt"
 
 
+def test_get_file_binary() -> None:
+    response = client.get("/file/1?convert=True")
+    assert response.status_code == HTTPStatus.OK
+
+    with open("mock.txt", "rb") as test_file:
+        assert response.read() == test_file.read()
+
+
 def test_get_file_by_name() -> None:
     response = client.get("/file/mock.txt")
     assert response.status_code == HTTPStatus.OK

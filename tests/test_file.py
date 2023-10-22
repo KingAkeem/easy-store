@@ -51,3 +51,8 @@ def test_get_all_files() -> None:
     file_object = file_objects[0]
     assert file_object["file_name"] == "mock.txt"
     assert file_object["file_type"] == ".txt"
+
+
+def test_delete_file() -> None:
+    response = client.delete("/file/1")
+    assert response.status_code == HTTPStatus.OK

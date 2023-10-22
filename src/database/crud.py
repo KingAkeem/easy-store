@@ -18,6 +18,14 @@ def create_json_object(db: Session, data: dict) -> JSONObject:
     return object
 
 
+def update_json_object(db: Session, id: str, data: dict) -> JSONObject:
+    object = get_json_object(db, id)
+    object.data = json.dumps(data)
+    db.commit()
+    db.refresh(object)
+    return object
+
+
 def create_file_object(db: Session, file: UploadFile) -> FileObject:
     directory = os.path.join(os.getcwd(), "files")
     if not os.path.exists(directory):
@@ -35,6 +43,34 @@ def create_file_object(db: Session, file: UploadFile) -> FileObject:
         file_path=file_path, file_name=file.filename, file_type=file_type
     )
     db.add(object)
+    db.commit()
+    db.refresh(object)
+    return object
+
+
+def update_file_object(db: Session, id: str, file: UploadFile) -> FileObject:
+    object = get_file_object(db, id)
+    # remove previous file
+    if os.path.exists(object.file_path):
+        os.remove(object.file_path)
+
+    object.file_name = file.filename
+    object.file_type = "".join(Path(file.filename).suffixes)
+
+    directory = os.path.join(os.getcwd(), "files")
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    # write new file
+    file_path = os.path.join(directory, file.filename)
+    try:
+        with open(file_path, "wb+") as f:
+            copyfileobj(file.file, f)
+    finally:
+        file.file.close()
+
+    object.file_path = file_path
+
     db.commit()
     db.refresh(object)
     return object
@@ -67,7 +103,17 @@ def delete_json_object(db: Session, id: str) -> None:
 
 
 def delete_file_object(db: Session, id: str) -> None:
-    db.query(FileObject).filter(
-        or_(FileObject.id == id, FileObject.file_name == id)
-    ).delete()
+    file_object = (
+        db.query(FileObject)
+        .filter(or_(FileObject.id == id, FileObject.file_name == id))
+        .scalar()
+    )
+
+    if not file_object:
+        raise FileNotFoundError("file does not exist.")
+
+    if os.path.exists(file_object.file_path):
+        os.remove(file_object.file_path)
+
+    db.delete(file_object)
     db.commit()

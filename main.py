@@ -39,6 +39,13 @@ def create_json_object(data: dict, db: Session = Depends(get_db)):
         )
 
 
+@app.put("/json/{object_id}", response_model=schemas.JSONObject)
+def update_json_object(
+    object_id: str, data: dict, db: Session = Depends(get_db)
+):  # noqa E501
+    return crud.update_json_object(db, id=object_id, data=data)
+
+
 @app.post("/file", response_model=schemas.FileObject)
 def create_file_object(data: UploadFile, db: Session = Depends(get_db)):
     try:
@@ -47,6 +54,13 @@ def create_file_object(data: UploadFile, db: Session = Depends(get_db)):
         raise HTTPException(
             status_code=HTTPStatus.CONFLICT, detail="Object already exists."
         )
+
+
+@app.put("/file/{object_id}", response_model=schemas.FileObject)
+def update_file_object(
+    object_id: str, data: UploadFile, db: Session = Depends(get_db)
+):  # noqa E501
+    return crud.update_file_object(db, id=object_id, file=data)
 
 
 @app.get("/json/{object_id}")
@@ -101,5 +115,10 @@ def delete_json_object(object_id: str, db: Session = Depends(get_db)):
 
 @app.delete("/file/{object_id}")
 def delete_file_object(object_id: str, db: Session = Depends(get_db)):
-    crud.delete_file_object(db, id=object_id)
+    try:
+        crud.delete_file_object(db, id=object_id)
+    except FileNotFoundError:
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST, detail="File does not exist."
+        )
     return {"message": "Object successfully deleted."}

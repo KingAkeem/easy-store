@@ -16,11 +16,3 @@ TestingSessionLocal = sessionmaker(
 )  # noqa E501
 
 Base.metadata.create_all(bind=engine)
-
-
-def override_get_db():
-    try:
-        db = TestingSessionLocal()
-        yield db
-    finally:
-        db.close()

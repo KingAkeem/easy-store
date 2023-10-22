@@ -2,8 +2,16 @@ from fastapi.testclient import TestClient
 from http import HTTPStatus
 from main import app, get_db
 
-# must be imported last
-from tests.mock_db import override_get_db
+from .mock_db import TestingSessionLocal
+
+
+def override_get_db():
+    try:
+        db = TestingSessionLocal()
+        yield db
+    finally:
+        db.close()
+
 
 app.dependency_overrides[get_db] = override_get_db
 client = TestClient(app)

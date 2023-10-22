@@ -29,7 +29,9 @@ def to_json(object: models.JSONObject) -> models.JSONObject:
     return object
 
 
-@app.post("/json", response_model=schemas.JSONObject)
+@app.post(
+    "/json", status_code=HTTPStatus.CREATED, response_model=schemas.JSONObject
+)  # noqa E501
 def create_json_object(data: dict, db: Session = Depends(get_db)):
     try:
         return crud.create_json_object(db, data=data)
@@ -46,7 +48,9 @@ def update_json_object(
     return crud.update_json_object(db, id=object_id, data=data)
 
 
-@app.post("/file", response_model=schemas.FileObject)
+@app.post(
+    "/file", status_code=HTTPStatus.CREATED, response_model=schemas.FileObject
+)  # noqa E501
 def create_file_object(data: UploadFile, db: Session = Depends(get_db)):
     try:
         return crud.create_file_object(db, file=data)

@@ -32,17 +32,7 @@ docker run -p 8000:8080 easy-store
 The service will be available at http://localhost:8000.
 
 ## API Endpoints
-### JSON Data Endpoint
-- `POST /json`: Store JSON data in the SQLite database.
-- `GET /json/{data_id}`: Retrieve stored JSON data by ID.
-    - Query Params:
-        - convert: bool = True | False - Converts the file to it's JSON representation instead of a string.
-
-### File Data Endpoint
-- `POST /file`: Upload and store file data.
-- `GET /file/{file_id}`: Retrieve stored file data by ID.
-    - Query Params:
-        - convert: bool = True | False - Converts file to it's binary representation
+Check {{url}}/docs for swagger documentation on the endpoints.
 
 ## Usage
 To use this service, you can make API requests using tools like curl, or you can create a front-end application to interact with the service. Below are some examples of API requests:

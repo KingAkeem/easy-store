@@ -23,41 +23,38 @@ client = TestClient(app)
 test_data = {"test_data": {"nested_obj": "something else"}}
 
 
-def test_create_json() -> None:
-    response = client.post("/json", json=test_data)
+class TestJson:
+    def test_create_json(self) -> None:
+        response = client.post("/json", json=test_data)
 
-    json_object = response.json()
-    assert response.status_code == HTTPStatus.CREATED
-    assert json_object["data"] == json.dumps(test_data)
+        json_object = response.json()
+        assert response.status_code == HTTPStatus.CREATED
+        assert json_object["data"] == json.dumps(test_data)
 
+    def test_get_json_string(self) -> None:
+        response = client.get("/json/1")
+        assert response.status_code == HTTPStatus.OK
 
-def test_get_json_string() -> None:
-    response = client.get("/json/1")
-    assert response.status_code == HTTPStatus.OK
+        json_object = response.json()
+        assert json_object["data"] == json.dumps(test_data)
 
-    json_object = response.json()
-    assert json_object["data"] == json.dumps(test_data)
+    def test_get_json_object(self) -> None:
+        response = client.get("/json/1?convert=True")
+        assert response.status_code == HTTPStatus.OK
 
+        json_object = response.json()
+        assert json_object["data"] == test_data
 
-def test_get_json_object() -> None:
-    response = client.get("/json/1?convert=True")
-    assert response.status_code == HTTPStatus.OK
+    def test_get_all_json(self) -> None:
+        response = client.get("/json")
+        assert response.status_code == HTTPStatus.OK
 
-    json_object = response.json()
-    assert json_object["data"] == test_data
+        json_objects = response.json()
+        assert len(json_objects) == 1
 
+        json_object = json_objects[0]
+        assert json_object["data"] == json.dumps(test_data)
 
-def test_get_all_json() -> None:
-    response = client.get("/json")
-    assert response.status_code == HTTPStatus.OK
-
-    json_objects = response.json()
-    assert len(json_objects) == 1
-
-    json_object = json_objects[0]
-    assert json_object["data"] == json.dumps(test_data)
-
-
-def test_delete_json() -> None:
-    response = client.delete("/json/1")
-    assert response.status_code == HTTPStatus.OK
+    def test_delete_json(self) -> None:
+        response = client.delete("/json/1")
+        assert response.status_code == HTTPStatus.OK

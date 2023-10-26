@@ -71,6 +71,7 @@ def update_file_object(
 def get_json_object(
     object_id: str, convert: bool = False, db: Session = Depends(get_db)
 ):  # noqa E501
+    print("another change")
     object = crud.get_json_object(db, id=object_id)
     if object is None:
         raise HTTPException(
